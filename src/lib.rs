@@ -1,4 +1,4 @@
-use std::{sync,cmp,ops,default};
+use std::{sync,cmp,default};
 use std::default::Default;
 
 static DEFAULT_WIDTH: usize = 50;
@@ -7,7 +7,7 @@ static DEFAULT_BAR: char = '=';
 static DEFAULT_INDICATOR: char = '#';
 static SEGMENTS: [usize; 4] = [10, 5, 4, 2];
 
-
+/// Progress bar style
 #[derive(Clone,Debug,Eq,PartialEq,Ord,PartialOrd,Hash)]
 pub struct Style {
     width: usize,
@@ -18,30 +18,92 @@ pub struct Style {
 }
 
 impl Style {
+    /// Default progress bar style
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar, explicitly asking for the default style:
+    /// ```rust
+    /// let style = logbar::Style::new();
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn new() -> Self {
         Style::default()
     }
 
+    /// Set the progress bar width in characters
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar with a width of 80 characters:
+    /// ```rust
+    /// let style = logbar::Style::new().width(80);
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn width(mut self, width: usize) -> Self {
         self.width = width;
         self
     }
 
+    /// Toggle progress bar labels of the form XX%
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar without labels:
+    /// ```rust
+    /// let style = logbar::Style::new().labels(false);
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn labels(mut self, labels: bool) -> Self {
         self.labels = labels;
         self
     }
 
+    /// Choose a "tick" character separating the progress bar segments
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar with '↓' as tick character:
+    /// ```rust
+    /// let style = logbar::Style::new().tick('↓');
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn tick(mut self, tick: char) -> Self {
         self.tick = tick;
         self
     }
 
+    /// Choose a character for the progress bar segments
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar made out of '-' characters, separated
+    /// by the default "tick" character.
+    /// ```rust
+    /// let style = logbar::Style::new().bar('-');
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn bar(mut self, bar: char) -> Self {
         self.bar = bar;
         self
     }
 
+    /// Choose a progress indicator
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar where the progress is indicated by the
+    /// number of '█' characters.
+    /// ```rust
+    /// let style = logbar::Style::new().indicator('█');
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     pub fn indicator(mut self, indicator: char) -> Self {
         self.indicator = indicator;
         self
@@ -49,6 +111,16 @@ impl Style {
 }
 
 impl default::Default for Style {
+    /// Default progress bar style
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar, explicitly asking for the default style:
+    /// ```rust
+    /// let style = logbar::Style::default();
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
     fn default() -> Self {
         Style{
             width: DEFAULT_WIDTH,
@@ -67,10 +139,11 @@ struct Counter {
     finished: bool,
 }
 
+/// A log-friendly progress bar
 #[derive(Debug)]
 pub struct ProgressBar {
     counter: sync::Arc<sync::Mutex<Counter>>,
-    max_count: usize,
+    max_progress: usize,
     style: Style,
 }
 
@@ -127,25 +200,70 @@ fn draw_bar(style: &Style) {
 }
 
 impl ProgressBar {
-    pub fn new(max_count: usize) -> Self {
-        ProgressBar::with_style(max_count, Style::default())
+    /// Create a new progress bar with default style
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::new(max_progress);
+    /// ```
+    pub fn new(max_progress: usize) -> Self {
+        ProgressBar::with_style(max_progress, Style::default())
     }
 
-    pub fn with_style(max_count: usize, style: Style) -> Self {
+    /// Create a new progress bar with custom style
+    ///
+    /// # Example
+    ///
+    /// Create a progress bar with a width of 80 characters:
+    /// ```rust
+    /// let style = logbar::Style::new().width(80);
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::with_style(max_progress, style);
+    /// ```
+    pub fn with_style(max_progress: usize, style: Style) -> Self {
         let counter = sync::Arc::new(sync::Mutex::new(Counter::default()));
         draw_bar(&style);
-        ProgressBar{counter, max_count, style}
+        ProgressBar{counter, max_progress, style}
     }
 
+    /// Get the style of the current progress bar
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let max_progress = 100;
+    /// let bar = logbar::ProgressBar::new(max_progress);
+    /// assert_eq!(bar.style(), &logbar::Style::default())
+    /// ```
     pub fn style(&self) -> &Style {
         &self.style
     }
 
+    /// Increment the progress
+    ///
+    /// This method increments the internal progress counter, up to the
+    /// maximum defined during the construction of the progress bar. It
+    /// then updates the progress display.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let max_progress = 50;
+    /// let bar = logbar::ProgressBar::new(max_progress);
+    /// bar.inc(10); // Increment progress to 10 out of 50.
+    /// // The progress bar is at 20% now
+    /// bar.inc(10); // Increment progress to 20 out of 50.
+    /// // The progress bar is at 40% now
+    /// bar.inc(100); // Increment progress to 50 out of 50.
+    /// // The progress bar is at 100% now
+    /// ```
     pub fn inc(&self, i: usize) {
         let new_progress = {
             let mut c = self.counter.lock().unwrap();
-            let new_count = cmp::min(c.count + i, self.max_count);
-            let new_progress = new_count*self.style.width/self.max_count;
+            let new_count = cmp::min(c.count + i, self.max_progress);
+            let new_progress = new_count*self.style.width/self.max_progress;
             let diff = new_progress - c.progress;
             *c = Counter{count: new_count, progress: new_progress, finished: false};
             diff
@@ -155,8 +273,21 @@ impl ProgressBar {
         }
     }
 
+    /// Finish the progress bar
+    ///
+    /// This method sets the progress to 100% and moves to the next line
+    /// after the progress bar
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// let max_progress = 50;
+    /// let bar = logbar::ProgressBar::new(max_progress);
+    /// bar.finish();
+    /// // The progress bar is at 100% now
+    /// ```
     pub fn finish(&self) {
-        self.inc(self.max_count);
+        self.inc(self.max_progress);
         let mut c = self.counter.lock().unwrap();
         if c.finished == false {
             eprintln!("");
@@ -171,14 +302,16 @@ mod tests {
     use super::*;
 
     //TODO: capture stderr and check
-    // for the time being,
+    // for the time being, run
+    // cargo test -- --nocapture --test_threads=1
+    // and check the output manually
 
     #[test]
     fn construct() {
         eprintln!("");
-        let max_count = 1000;
+        let max_progress = 1000;
         {
-            let bar = ProgressBar::new(max_count);
+            let bar = ProgressBar::new(max_progress);
             assert_eq!(bar.style().width, DEFAULT_WIDTH);
         }
 
@@ -186,7 +319,7 @@ mod tests {
             let width = 80;
             let mut style = Style::default();
             style.width = width;
-            let bar = ProgressBar::with_style(max_count, style);
+            let bar = ProgressBar::with_style(max_progress, style);
             assert_eq!(bar.style().width, width);
         }
 
@@ -195,79 +328,79 @@ mod tests {
     #[test]
     fn inc() {
         eprintln!("");
-        let max_count = 20;
+        let max_progress = 20;
         let ten_millis = std::time::Duration::from_millis(10);
 
-        let bar = ProgressBar::new(max_count);
-        for _ in 0..max_count {
+        let bar = ProgressBar::new(max_progress);
+        for _ in 0..max_progress {
             std::thread::sleep(ten_millis);
             bar.inc(1);
         }
         eprintln!("");
 
-        let bar = ProgressBar::new(max_count);
-        bar.inc(2*max_count);
+        let bar = ProgressBar::new(max_progress);
+        bar.inc(2*max_progress);
         eprintln!("");
 
-        let _bar = ProgressBar::new(max_count);
+        let _bar = ProgressBar::new(max_progress);
         eprintln!("");
     }
 
     #[test]
     fn finish() {
         eprintln!("");
-        let max_count = 200;
-        let bar = ProgressBar::new(max_count);
+        let max_progress = 200;
+        let bar = ProgressBar::new(max_progress);
         bar.finish();
     }
 
     #[test]
     fn abort() {
         eprintln!("");
-        let max_count = 200;
-        let bar = ProgressBar::new(max_count);
+        let max_progress = 200;
+        let bar = ProgressBar::new(max_progress);
         bar.inc(50);
     }
 
     #[test]
     fn alt_styles() {
         eprintln!("");
-        let max_count = 200;
+        let max_progress = 200;
         eprintln!("indicator █:");
         let style = Style::new().indicator('█');
-        let bar = ProgressBar::with_style(max_count, style);
+        let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
         eprintln!("\ntick ↓:");
         let style = Style::new().tick('↓');
-        let bar = ProgressBar::with_style(max_count, style);
+        let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
         eprintln!("\nbar -:");
         let style = Style::new().bar('-');
-        let bar = ProgressBar::with_style(max_count, style);
+        let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
         eprintln!("\nno labels:");
         let style = Style::new().labels(false);
-        let bar = ProgressBar::with_style(max_count, style);
+        let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
         eprintln!("\nall of the above:");
         let style = Style::new().indicator('█').labels(false).tick('↓').bar('-');
-        let bar = ProgressBar::with_style(max_count, style);
+        let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
         for w in 0..=20 {
             eprintln!("\nwidth {}:", w);
             let style = Style::new().width(w);
-            let bar = ProgressBar::with_style(max_count, style);
+            let bar = ProgressBar::with_style(max_progress, style);
             bar.finish();
         }
         let w = 40;
         eprintln!("\nwidth {}:", w);
         let style = Style::new().width(w);
-        let bar = ProgressBar::with_style(max_count, style.clone());
+        let bar = ProgressBar::with_style(max_progress, style.clone());
         bar.finish();
     }
 }
