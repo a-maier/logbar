@@ -164,21 +164,6 @@ impl ProgressBar {
         }
     }
 
-    pub fn abort(&self) {
-        let mut c = self.counter.lock().unwrap();
-        *c = Counter{
-            count: self.max_count,
-            progress: self.style.width,
-            finished: true
-        };
-    }
-
-}
-
-impl ops::Drop for ProgressBar {
-    fn drop(&mut self) {
-        self.finish()
-    }
 }
 
 #[cfg(test)]
@@ -213,20 +198,19 @@ mod tests {
         let max_count = 20;
         let ten_millis = std::time::Duration::from_millis(10);
 
-        {
-            let bar = ProgressBar::new(max_count);
-            for _ in 0..max_count {
-                std::thread::sleep(ten_millis);
-                bar.inc(1);
-            }
+        let bar = ProgressBar::new(max_count);
+        for _ in 0..max_count {
+            std::thread::sleep(ten_millis);
+            bar.inc(1);
         }
+        eprintln!("");
 
-        {
-            let bar = ProgressBar::new(max_count);
-            bar.inc(2*max_count);
-        }
+        let bar = ProgressBar::new(max_count);
+        bar.inc(2*max_count);
+        eprintln!("");
 
         let _bar = ProgressBar::new(max_count);
+        eprintln!("");
     }
 
     #[test]
@@ -243,7 +227,6 @@ mod tests {
         let max_count = 200;
         let bar = ProgressBar::new(max_count);
         bar.inc(50);
-        bar.abort();
     }
 
     #[test]
@@ -278,12 +261,13 @@ mod tests {
         for w in 0..=20 {
             eprintln!("\nwidth {}:", w);
             let style = Style::new().width(w);
-            let _bar = ProgressBar::with_style(max_count, style);
+            let bar = ProgressBar::with_style(max_count, style);
+            bar.finish();
         }
         let w = 40;
         eprintln!("\nwidth {}:", w);
         let style = Style::new().width(w);
-        let _bar = ProgressBar::with_style(max_count, style.clone());
-
+        let bar = ProgressBar::with_style(max_count, style.clone());
+        bar.finish();
     }
 }
