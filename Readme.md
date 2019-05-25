@@ -39,7 +39,7 @@ let style = Style::default()
     .labels(false) // no XX% labels
     .tick('↓').bar('-') // rendered as ↓---↓---↓ etc.
     .indicator('█') // indicating the progress with '█' characters
-        ;
+;
 let bar = logbar::ProgressBar::with_style(10, style);
 bar.finish();
 ```
