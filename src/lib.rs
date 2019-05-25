@@ -289,7 +289,7 @@ impl ProgressBar {
     pub fn finish(&self) {
         self.inc(self.max_progress);
         let mut c = self.counter.lock().unwrap();
-        if c.finished == false {
+        if !c.finished {
             eprintln!("");
             c.finished = true;
         }
