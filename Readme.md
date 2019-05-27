@@ -1,4 +1,4 @@
-# Logbar
+# logbar
 
 A log-friendly command-line progress bar.
 
@@ -9,7 +9,7 @@ possible, for example when writing to a pipe. This crate's progress bar
 never tries to modify what was printed before, so the output can be
 piped directly to a log file.
 
-# Usage
+## Usage
 
 Add this to your Cargo.toml:
 
@@ -18,7 +18,7 @@ Add this to your Cargo.toml:
 logbar = "0.1"
 ```
 
-# Examples
+## Examples
 
 
 This example creates a default progress bar for a ten-step process:
@@ -43,3 +43,6 @@ let style = Style::default()
 let bar = logbar::ProgressBar::with_style(10, style);
 bar.finish();
 ```
+
+
+License: GPL-3.0-or-later
