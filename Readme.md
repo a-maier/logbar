@@ -2,12 +2,12 @@
 
 A log-friendly command-line progress bar.
 
-Typical progress bar implementations update the progress report in
-place, by going back and overwriting previous output. This allows for
-beautiful progress displays, but becomes a problem when moving backwards
-is not possible, for example when writing to a pipe. This crate's
-progress bar never tries to modify what was printed before, so the
-output can be piped directly to a log file.
+Many progress bar implementations update the progress report in place,
+by going back and overwriting previous output. This allows for beautiful
+progress displays, but becomes a problem when moving backwards is not
+possible, for example when writing to a pipe. This crate's progress bar
+never tries to modify what was printed before, so the output can be
+piped directly to a log file.
 
 # Usage
 
