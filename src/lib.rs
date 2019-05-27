@@ -88,6 +88,7 @@ impl Style {
     /// let max_progress = 100;
     /// let bar = logbar::ProgressBar::with_style(max_progress, style);
     /// ```
+    #[allow(clippy::blacklisted_name)]
     pub fn bar(mut self, bar: char) -> Self {
         self.bar = bar;
         self
