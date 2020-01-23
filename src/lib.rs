@@ -32,7 +32,7 @@
 //!
 //! We can also customise the style of the progress bar:
 //! ```rust
-//! let style = Style::default()
+//! let style = logbar::Style::default()
 //!     .width(80) // 80 characters wide
 //!     .labels(false) // no XX% labels
 //!     .tick('↓').bar('-') // rendered as ↓---↓---↓ etc.
