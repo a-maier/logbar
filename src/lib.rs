@@ -308,7 +308,11 @@ impl ProgressBar {
         let new_progress = {
             let mut c = self.counter.lock().unwrap();
             let new_count = cmp::min(c.count + i, self.max_progress);
-            let new_progress = new_count*self.style.width/self.max_progress;
+            let new_progress = if self.max_progress > 0 {
+                new_count*self.style.width/self.max_progress
+            } else {
+                0
+            };
             let diff = new_progress - c.progress;
             *c = Counter{count: new_count, progress: new_progress, finished: false};
             diff
@@ -389,6 +393,17 @@ mod tests {
 
         let _bar = ProgressBar::new(max_progress);
         eprintln!("");
+    }
+
+    #[test]
+    fn empty() {
+        eprintln!("");
+        let max_progress = 0;
+
+        let bar = ProgressBar::new(max_progress);
+        bar.inc(0);
+        bar.inc(1);
+        bar.finish();
     }
 
     #[test]
