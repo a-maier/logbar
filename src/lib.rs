@@ -348,7 +348,7 @@ mod tests {
 
     //TODO: capture stderr and check
     // for the time being, run
-    // cargo test -- --nocapture --test_threads=1
+    // cargo test -- --nocapture --test-threads=1
     // and check the output manually
 
     #[test]
