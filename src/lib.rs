@@ -42,8 +42,8 @@
 //! bar.finish();
 //! ```
 //!
-use std::{sync,cmp,default};
 use std::default::Default;
+use std::{cmp, default, sync};
 
 static DEFAULT_WIDTH: usize = 50;
 static DEFAULT_TICK: char = '|';
@@ -52,7 +52,7 @@ static DEFAULT_INDICATOR: char = '#';
 static SEGMENTS: [usize; 4] = [10, 5, 4, 2];
 
 /// Progress bar style
-#[derive(Clone,Debug,Eq,PartialEq,Ord,PartialOrd,Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct Style {
     width: usize,
     labels: bool,
@@ -167,7 +167,7 @@ impl default::Default for Style {
     /// let bar = logbar::ProgressBar::with_style(max_progress, style);
     /// ```
     fn default() -> Self {
-        Style{
+        Style {
             width: DEFAULT_WIDTH,
             labels: true,
             tick: DEFAULT_TICK,
@@ -177,7 +177,7 @@ impl default::Default for Style {
     }
 }
 
-#[derive(Clone,Default,Debug,Eq,PartialEq,Ord,PartialOrd,Hash)]
+#[derive(Clone, Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 struct Counter {
     count: usize,
     progress: usize,
@@ -196,7 +196,7 @@ fn num_segments(width: usize) -> usize {
     for s in SEGMENTS.iter() {
         // the number of segments must divide the total width
         // and each segment must be large enough for labels
-        if width % s == 0 && width/s  > 3 {
+        if width % s == 0 && width / s > 3 {
             return *s;
         }
     }
@@ -206,12 +206,12 @@ fn num_segments(width: usize) -> usize {
 fn draw_labels(width: usize, segments: usize) {
     debug_assert_eq!(width % segments, 0);
     eprint!("0% ");
-    let seg_width = width/segments;
+    let seg_width = width / segments;
     for p in 1..=segments {
-        for _ in 0..(seg_width-3) {
+        for _ in 0..(seg_width - 3) {
             eprint!(" ");
         }
-        eprint!("{}%", p*100/segments)
+        eprint!("{}%", p * 100 / segments)
     }
     eprintln!("")
 }
@@ -220,9 +220,9 @@ fn draw_tickbar(style: &Style, segments: usize) {
     let width = style.width;
     debug_assert_eq!(width % segments, 0);
     eprint!("{}", style.tick);
-    let seg_width = width/segments;
+    let seg_width = width / segments;
     for _ in 1..=segments {
-        for _ in 0..(seg_width-1) {
+        for _ in 0..(seg_width - 1) {
             eprint!("{}", style.bar);
         }
         eprint!("{}", style.tick)
@@ -238,8 +238,7 @@ fn draw_bar(style: &Style) {
     }
     if width > 1 {
         draw_tickbar(style, segments)
-    }
-    else if width == 1 {
+    } else if width == 1 {
         eprintln!("{}", style.tick)
     }
 }
@@ -270,7 +269,11 @@ impl ProgressBar {
     pub fn with_style(max_progress: usize, style: Style) -> Self {
         let counter = sync::Arc::new(sync::Mutex::new(Counter::default()));
         draw_bar(&style);
-        ProgressBar{counter, max_progress, style}
+        ProgressBar {
+            counter,
+            max_progress,
+            style,
+        }
     }
 
     /// Get the style of the current progress bar
@@ -309,12 +312,16 @@ impl ProgressBar {
             let mut c = self.counter.lock().unwrap();
             let new_count = cmp::min(c.count + i, self.max_progress);
             let new_progress = if self.max_progress > 0 {
-                new_count*self.style.width/self.max_progress
+                new_count * self.style.width / self.max_progress
             } else {
                 0
             };
             let diff = new_progress - c.progress;
-            *c = Counter{count: new_count, progress: new_progress, finished: false};
+            *c = Counter {
+                count: new_count,
+                progress: new_progress,
+                finished: false,
+            };
             diff
         };
         for _ in 0..new_progress {
@@ -343,7 +350,6 @@ impl ProgressBar {
             c.finished = true;
         }
     }
-
 }
 
 #[cfg(test)]
@@ -371,7 +377,6 @@ mod tests {
             let bar = ProgressBar::with_style(max_progress, style);
             assert_eq!(bar.style().width, width);
         }
-
     }
 
     #[test]
@@ -388,7 +393,7 @@ mod tests {
         eprintln!("");
 
         let bar = ProgressBar::new(max_progress);
-        bar.inc(2*max_progress);
+        bar.inc(2 * max_progress);
         eprintln!("");
 
         let _bar = ProgressBar::new(max_progress);
