@@ -213,7 +213,7 @@ fn draw_labels(width: usize, segments: usize) {
         }
         eprint!("{}%", p * 100 / segments)
     }
-    eprintln!("")
+    eprintln!()
 }
 
 fn draw_tickbar(style: &Style, segments: usize) {
@@ -227,7 +227,7 @@ fn draw_tickbar(style: &Style, segments: usize) {
         }
         eprint!("{}", style.tick)
     }
-    eprintln!("")
+    eprintln!()
 }
 
 fn draw_bar(style: &Style) {
@@ -236,10 +236,10 @@ fn draw_bar(style: &Style) {
     if width > 3 && style.labels {
         draw_labels(width, segments)
     }
-    if width > 1 {
-        draw_tickbar(style, segments)
-    } else if width == 1 {
-        eprintln!("{}", style.tick)
+    match width.cmp(&1) {
+        cmp::Ordering::Greater => draw_tickbar(style, segments),
+        cmp::Ordering::Equal => eprintln!("{}", style.tick),
+        cmp::Ordering::Less => { }
     }
 }
 
@@ -346,7 +346,7 @@ impl ProgressBar {
         self.inc(self.max_progress);
         let mut c = self.counter.lock().unwrap();
         if !c.finished {
-            eprintln!("");
+            eprintln!();
             c.finished = true;
         }
     }
@@ -363,7 +363,7 @@ mod tests {
 
     #[test]
     fn construct() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 1000;
         {
             let bar = ProgressBar::new(max_progress);
@@ -381,7 +381,7 @@ mod tests {
 
     #[test]
     fn inc() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 20;
         let ten_millis = std::time::Duration::from_millis(10);
 
@@ -390,19 +390,19 @@ mod tests {
             std::thread::sleep(ten_millis);
             bar.inc(1);
         }
-        eprintln!("");
+        eprintln!();
 
         let bar = ProgressBar::new(max_progress);
         bar.inc(2 * max_progress);
-        eprintln!("");
+        eprintln!();
 
         let _bar = ProgressBar::new(max_progress);
-        eprintln!("");
+        eprintln!();
     }
 
     #[test]
     fn empty() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 0;
 
         let bar = ProgressBar::new(max_progress);
@@ -413,7 +413,7 @@ mod tests {
 
     #[test]
     fn finish() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 200;
         let bar = ProgressBar::new(max_progress);
         bar.finish();
@@ -421,7 +421,7 @@ mod tests {
 
     #[test]
     fn abort() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 200;
         let bar = ProgressBar::new(max_progress);
         bar.inc(50);
@@ -429,7 +429,7 @@ mod tests {
 
     #[test]
     fn alt_styles() {
-        eprintln!("");
+        eprintln!();
         let max_progress = 200;
         eprintln!("indicator █:");
         let style = Style::new().indicator('█');
