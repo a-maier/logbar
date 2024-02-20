@@ -239,7 +239,7 @@ fn draw_bar(style: &Style) {
     match width.cmp(&1) {
         cmp::Ordering::Greater => draw_tickbar(style, segments),
         cmp::Ordering::Equal => eprintln!("{}", style.tick),
-        cmp::Ordering::Less => { }
+        cmp::Ordering::Less => {}
     }
 }
 
@@ -452,7 +452,8 @@ mod tests {
         bar.finish();
 
         eprintln!("\nall of the above:");
-        let style = Style::new().indicator('█').labels(false).tick('↓').bar('-');
+        let style =
+            Style::new().indicator('█').labels(false).tick('↓').bar('-');
         let bar = ProgressBar::with_style(max_progress, style);
         bar.finish();
 
